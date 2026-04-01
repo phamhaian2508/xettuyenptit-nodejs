@@ -14,18 +14,10 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   async function refreshUser() {
-    const token = localStorage.getItem("ptit_token");
-    if (!token) {
-      setUser(null);
-      setLoading(false);
-      return;
-    }
-
     try {
       const response = await apiClient.me();
       setUser(response.data);
     } catch (_error) {
-      localStorage.removeItem("ptit_token");
       setUser(null);
     } finally {
       setLoading(false);
@@ -34,17 +26,21 @@ export function AuthProvider({ children }) {
 
   async function login(payload) {
     const response = await apiClient.login(payload);
-    localStorage.setItem("ptit_token", response.data.token);
     setUser(response.data.user);
     return response.data.user;
   }
 
-  function logout() {
-    localStorage.removeItem("ptit_token");
+  async function logout() {
+    try {
+      await apiClient.logout();
+    } catch (_error) {
+      // Ignore logout transport errors and clear local state anyway.
+    }
     setUser(null);
   }
 
   useEffect(() => {
+    localStorage.removeItem("ptit_token");
     refreshUser();
   }, []);
 
