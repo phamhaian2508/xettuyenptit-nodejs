@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { PortalFooter } from "./PortalFooter";
 import { PortalIntroModal } from "./PortalIntroModal";
 
@@ -29,11 +29,9 @@ function LogoutOutlinedIcon() {
   );
 }
 
-export function AppShell({ user, onLogout, children }) {
+export function AdminShell({ user, onLogout, navigation = [], children }) {
   const navigate = useNavigate();
-  const location = useLocation();
-  const displayFullName = user?.fullName || user?.userName || "Thí sinh";
-  const isAccountCenter = location.pathname === "/account/center";
+  const displayFullName = user?.fullName || user?.userName || "Quản trị viên";
   const [showIntroModal, setShowIntroModal] = useState(false);
 
   useEffect(() => {
@@ -49,26 +47,26 @@ export function AppShell({ user, onLogout, children }) {
 
   async function handleLogout() {
     await onLogout();
-    navigate("/user/login");
+    navigate("/admin/login");
   }
 
   return (
-    <div className="app-shell-page">
+    <div className="admin-shell-page">
       <header className="app-shared-header">
-        <Link to="/mucdich" className="app-shared-brand">
+        <Link to="/admin/dashboard" className="app-shared-brand">
           <img src="/images/ptit-header-icon.png" className="app-shared-logo" alt="PTIT" />
-          {isAccountCenter ? (
-            <span className="app-shared-brand-link-simple">Xét tuyển PTIT</span>
-          ) : (
-            <div>
-              <div className="app-shared-brand-top">HỌC VIỆN CÔNG NGHỆ BƯU CHÍNH VIỄN THÔNG</div>
-              <div className="app-shared-brand-bottom">HỆ THỐNG XÉT TUYỂN TRỰC TUYẾN</div>
-            </div>
-          )}
+          <div>
+            <div className="app-shared-brand-top">HỌC VIỆN CÔNG NGHỆ BƯU CHÍNH VIỄN THÔNG</div>
+            <div className="app-shared-brand-bottom">CỔNG QUẢN TRỊ XÉT TUYỂN TRỰC TUYẾN</div>
+          </div>
         </Link>
 
         <div className="app-shared-right">
-          <button type="button" className="app-shared-action app-shared-info-button" onClick={() => setShowIntroModal(true)}>
+          <button
+            type="button"
+            className="app-shared-action app-shared-info-button"
+            onClick={() => setShowIntroModal(true)}
+          >
             <InfoCircleIcon />
           </button>
           <div className="app-shared-user">
@@ -77,9 +75,9 @@ export function AppShell({ user, onLogout, children }) {
               <span className="app-shared-user-name">{displayFullName}</span>
             </div>
             <div className="app-shared-user-menu">
-              <Link to="/account/center">
+              <Link to="/admin/profile">
                 <UserOutlinedIcon />
-                <span>Trang cá nhân</span>
+                <span>Tài khoản</span>
               </Link>
               <button type="button" className="app-shared-logout" onClick={handleLogout}>
                 <LogoutOutlinedIcon />
@@ -90,7 +88,22 @@ export function AppShell({ user, onLogout, children }) {
         </div>
       </header>
 
-      <div className="app-shell-content">{children}</div>
+      <div className="admin-shell-nav-wrap">
+        <nav className="admin-shell-nav">
+          {navigation.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.end}
+              className={({ isActive }) => (isActive ? "admin-shell-link active" : "admin-shell-link")}
+            >
+              {item.label}
+            </NavLink>
+          ))}
+        </nav>
+      </div>
+
+      <main className="admin-shell-content">{children}</main>
 
       <PortalFooter />
       <PortalIntroModal open={showIntroModal} onClose={() => setShowIntroModal(false)} />

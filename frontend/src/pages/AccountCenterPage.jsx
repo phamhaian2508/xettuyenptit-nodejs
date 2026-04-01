@@ -5,7 +5,8 @@ import { apiClient } from "../api/client";
 function buildInitials(user) {
   const middle = user?.middleName?.trim()?.[0] || "";
   const first = user?.firstName?.trim()?.[0] || "";
-  return `${middle}${first}`.toUpperCase() || "PT";
+  const full = user?.fullName?.trim()?.[0] || "";
+  return `${middle}${first}`.toUpperCase() || `${full}`.toUpperCase() || "PT";
 }
 
 export function AccountCenterPage({ user, refreshUser }) {
@@ -35,6 +36,12 @@ export function AccountCenterPage({ user, refreshUser }) {
   }, []);
 
   const initials = useMemo(() => buildInitials(profile), [profile]);
+  const roleLabel = user?.roles?.includes("ADMIN") ? "Admin" : "Thí sinh";
+  const mustChangePassword = Boolean(user?.isDefaultPassword);
+
+  function updateAddressField(key, value) {
+    setProfile((prev) => ({ ...prev, [key]: value }));
+  }
 
   async function handleProfileSubmit(event) {
     event.preventDefault();
@@ -45,7 +52,7 @@ export function AccountCenterPage({ user, refreshUser }) {
     try {
       await apiClient.updateProfile(profile);
       await refreshUser();
-      setProfileMessage("Da luu thong tin thanh cong.");
+      setProfileMessage("Đã lưu thông tin thành công.");
     } catch (error) {
       setErrorMessage(error.message);
     }
@@ -75,8 +82,8 @@ export function AccountCenterPage({ user, refreshUser }) {
             <div className="ac-name">{profile?.firstName || profile?.fullName}</div>
             <div className="ac-email">{profile?.email || "Chưa cập nhật email"}</div>
             <div className="ac-meta">
-              <p>Thí sinh</p>
-              <p>{profile?.firstName || "Chưa cập nhật tên"}</p>
+              <p>{roleLabel}</p>
+              <p>{profile?.fullName || "Chưa cập nhật tên"}</p>
               <p>{profile?.dateOfBirth || "Chưa cập nhật ngày sinh"}</p>
               <p>{profile?.gender || "Chưa cập nhật giới tính"}</p>
               <p>{profile?.email || "Chưa cập nhật email"}</p>
@@ -104,6 +111,11 @@ export function AccountCenterPage({ user, refreshUser }) {
               {profileMessage ? <div className="ac-success">{profileMessage}</div> : null}
               {passwordMessage ? <div className="ac-success">{passwordMessage}</div> : null}
               {errorMessage ? <div className="ac-error">{errorMessage}</div> : null}
+              {mustChangePassword && activeTab === "password" ? (
+                <div className="ac-error">
+                  Tài khoản này đang dùng mật khẩu mặc định. Bạn phải đổi mật khẩu trước khi tiếp tục sử dụng hệ thống.
+                </div>
+              ) : null}
 
               {activeTab === "password" ? (
                 <form onSubmit={handlePasswordSubmit}>
@@ -113,9 +125,7 @@ export function AccountCenterPage({ user, refreshUser }) {
                       className="ac-input"
                       type="password"
                       value={passwordForm.oldPassword}
-                      onChange={(event) =>
-                        setPasswordForm((prev) => ({ ...prev, oldPassword: event.target.value }))
-                      }
+                      onChange={(event) => setPasswordForm((prev) => ({ ...prev, oldPassword: event.target.value }))}
                       required
                     />
                   </div>
@@ -125,9 +135,7 @@ export function AccountCenterPage({ user, refreshUser }) {
                       className="ac-input"
                       type="password"
                       value={passwordForm.newPassword}
-                      onChange={(event) =>
-                        setPasswordForm((prev) => ({ ...prev, newPassword: event.target.value }))
-                      }
+                      onChange={(event) => setPasswordForm((prev) => ({ ...prev, newPassword: event.target.value }))}
                       required
                     />
                   </div>
@@ -137,14 +145,14 @@ export function AccountCenterPage({ user, refreshUser }) {
                       className="ac-input"
                       type="password"
                       value={passwordForm.confirmPassword}
-                      onChange={(event) =>
-                        setPasswordForm((prev) => ({ ...prev, confirmPassword: event.target.value }))
-                      }
+                      onChange={(event) => setPasswordForm((prev) => ({ ...prev, confirmPassword: event.target.value }))}
                       required
                     />
                   </div>
                   <div className="ac-save-wrap">
-                    <button className="ac-save" type="submit">Lưu</button>
+                    <button className="ac-save" type="submit">
+                      Lưu
+                    </button>
                   </div>
                 </form>
               ) : (
@@ -202,15 +210,15 @@ export function AccountCenterPage({ user, refreshUser }) {
                       <div className="ac-field">
                         <input
                           className="ac-input"
-                          value={profile?.permanentProvince || ""}
-                          onChange={(event) => setProfile((prev) => ({ ...prev, permanentProvince: event.target.value }))}
+                          value={profile?.permanentProvinceName || ""}
+                          onChange={(event) => updateAddressField("permanentProvinceName", event.target.value)}
                         />
                       </div>
                       <div className="ac-field">
                         <input
                           className="ac-input"
-                          value={profile?.permanentDistrict || ""}
-                          onChange={(event) => setProfile((prev) => ({ ...prev, permanentDistrict: event.target.value }))}
+                          value={profile?.permanentDistrictName || ""}
+                          onChange={(event) => updateAddressField("permanentDistrictName", event.target.value)}
                         />
                       </div>
                     </div>
@@ -218,8 +226,8 @@ export function AccountCenterPage({ user, refreshUser }) {
                       <div className="ac-field">
                         <input
                           className="ac-input"
-                          value={profile?.permanentWard || ""}
-                          onChange={(event) => setProfile((prev) => ({ ...prev, permanentWard: event.target.value }))}
+                          value={profile?.permanentWardName || ""}
+                          onChange={(event) => updateAddressField("permanentWardName", event.target.value)}
                         />
                       </div>
                       <div className="ac-field">
@@ -249,8 +257,8 @@ export function AccountCenterPage({ user, refreshUser }) {
                         onChange={(event) => setProfile((prev) => ({ ...prev, gender: event.target.value }))}
                       >
                         <option value="Nam">Nam</option>
-                        <option value="Nu">Nữ</option>
-                        <option value="Khac">Khác</option>
+                        <option value="Nữ">Nữ</option>
+                        <option value="Khác">Khác</option>
                       </select>
                     </div>
                   </div>
@@ -275,7 +283,9 @@ export function AccountCenterPage({ user, refreshUser }) {
                   </div>
 
                   <div className="ac-save-wrap">
-                    <button className="ac-save" type="submit">Lưu</button>
+                    <button className="ac-save" type="submit">
+                      Lưu
+                    </button>
                   </div>
                 </form>
               )}

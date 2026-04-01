@@ -17,7 +17,7 @@ export async function updateProfileController(req, res, next) {
   try {
     const profile = await updateAccountProfile(req.user.id, {
       ...req.body,
-      modifiedBy: req.user.userName
+      userName: req.user.userName
     });
     res.json({
       message: "update_success",
@@ -30,10 +30,7 @@ export async function updateProfileController(req, res, next) {
 
 export async function updatePasswordController(req, res, next) {
   try {
-    const result = await updateAccountPassword(req.user.id, {
-      ...req.body,
-      modifiedBy: req.user.userName
-    });
+    const result = await updateAccountPassword(req.user.id, req.body);
     res.json(result);
   } catch (error) {
     next(error);

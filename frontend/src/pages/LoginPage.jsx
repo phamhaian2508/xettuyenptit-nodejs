@@ -62,13 +62,13 @@ function CloseIcon() {
   );
 }
 
-export function LoginPage() {
+export function LoginPage({ mode = "candidate" }) {
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
   const [form, setForm] = useState({ username: "", password: "" });
   const [error, setError] = useState("");
-  const [showGuide, setShowGuide] = useState(true);
+  const [showGuide, setShowGuide] = useState(mode === "candidate");
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -76,10 +76,11 @@ export function LoginPage() {
 
   const usernameErrorVisible = !form.username.trim();
   const passwordErrorVisible = !form.password.trim();
+  const isAdmin = mode === "admin";
 
   useEffect(() => {
     const previousTitle = document.title;
-    document.title = "Login - Xét tuyển PTIT";
+    document.title = isAdmin ? "Admin Login - Xét tuyển PTIT" : "Login - Xét tuyển PTIT";
 
     function onKeyDown(event) {
       if (event.key === "Escape") {
@@ -92,7 +93,7 @@ export function LoginPage() {
       document.removeEventListener("keydown", onKeyDown);
       document.title = previousTitle;
     };
-  }, []);
+  }, [isAdmin]);
 
   function handleForgotSubmit(event) {
     event.preventDefault();
@@ -109,8 +110,9 @@ export function LoginPage() {
 
     setSubmitting(true);
     try {
-      await login(form);
-      const redirectTo = location.state?.from?.pathname || "/mucdich";
+      const user = await login(form);
+      const fallbackPath = user.roles?.includes("ADMIN") ? "/admin/dashboard" : "/mucdich";
+      const redirectTo = location.state?.from?.pathname || fallbackPath;
       navigate(redirectTo, { replace: true });
     } catch (submitError) {
       setError(submitError.message);
@@ -130,7 +132,9 @@ export function LoginPage() {
           <div className="main">
             <div className="title-wrap">
               <h1 className="head">HỌC VIỆN CÔNG NGHỆ BƯU CHÍNH VIỄN THÔNG</h1>
-              <div className="subhead">HỆ THỐNG XÉT TUYỂN TRỰC TUYẾN</div>
+              <div className="subhead">
+                {isAdmin ? "CỔNG QUẢN TRỊ XÉT TUYỂN" : "HỆ THỐNG XÉT TUYỂN TRỰC TUYẾN"}
+              </div>
             </div>
 
             {error ? <div className="sys-alert">{error}</div> : null}
@@ -191,16 +195,19 @@ export function LoginPage() {
               <button className="btn" type="submit" disabled={submitting}>
                 {submitting ? "Đang đăng nhập..." : "Đăng nhập"}
               </button>
-              <a
-                href="#"
-                className="forgot"
-                onClick={(event) => {
-                  event.preventDefault();
-                  setShowForgotModal(true);
-                }}
-              >
-                Quên mật khẩu ?
-              </a>
+
+              {!isAdmin ? (
+                <a
+                  href="#"
+                  className="forgot"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    setShowForgotModal(true);
+                  }}
+                >
+                  Quên mật khẩu?
+                </a>
+              ) : null}
             </form>
           </div>
 
@@ -237,7 +244,12 @@ export function LoginPage() {
                 <div className="forgot-modal-title">Quên mật khẩu</div>
               </div>
               <div className="forgot-modal-body">
-                <form className="forgot-form" onSubmit={handleForgotSubmit}>
+                <form
+                  className="forgot-form"
+                  onSubmit={handleForgotSubmit}
+                  data-support-path="/api/support/recovery/precheck"
+                  data-support-channel="LEGACY_HELPDESK"
+                >
                   <div className="forgot-form-item">
                     <label htmlFor="forgot-email" className="forgot-form-label">
                       Vui lòng nhập email đã dùng để đăng ký tài khoản
@@ -251,6 +263,7 @@ export function LoginPage() {
                       onChange={(event) => setForgotEmail(event.target.value)}
                     />
                   </div>
+                  <div hidden data-helpdesk-note="support-recovery-fallback" />
                   <div className="forgot-form-actions">
                     <button type="submit" className="forgot-submit-btn">
                       Gửi
@@ -266,61 +279,65 @@ export function LoginPage() {
         </div>
       ) : null}
 
-      <div
-        className={`guide-modal-overlay${showGuide ? " show" : ""}`}
-        aria-hidden={!showGuide}
-        onClick={(event) => {
-          if (event.target === event.currentTarget) {
-            setShowGuide(false);
-          }
-        }}
-      >
-        <div className="guide-modal" role="dialog" aria-modal="true" aria-labelledby="guideTitle">
-          <div className="guide-header">
-            <span className="guide-info-icon" aria-hidden="true">
-              <InfoIcon />
-            </span>
-            <span id="guideTitle">Hướng dẫn đăng nhập</span>
-            <button type="button" className="guide-close" onClick={() => setShowGuide(false)} aria-label="Đóng">
-              <CloseIcon />
-            </button>
-          </div>
-          <div className="guide-body">
-            <div className="guide-text">
-              Thí sinh nhập học trực tuyến dùng <b>Tên đăng nhập</b> và <b>Mật khẩu</b> được cấp.
-            </div>
-            <div className="guide-box">
-              <div className="guide-row">
-                <span className="guide-row-icon user" aria-hidden="true">
-                  <UserIcon />
-                </span>
-                <span>
-                  Tên đăng nhập là <b>CCCD/CMND</b> của thí sinh,<span className="guide-example">VD: 001234567891</span>
-                </span>
-              </div>
-              <div className="guide-row">
-                <span className="guide-row-icon lock" aria-hidden="true">
-                  <LockIcon />
-                </span>
-                <span>
-                  Mật khẩu là <b>ngày sinh</b> của thí sinh,<span className="guide-example">VD: 01012007</span>
-                </span>
-              </div>
-            </div>
-            <p className="guide-note">
-              <span className="guide-note-icon" aria-hidden="true">
+      {!isAdmin ? (
+        <div
+          className={`guide-modal-overlay${showGuide ? " show" : ""}`}
+          aria-hidden={!showGuide}
+          onClick={(event) => {
+            if (event.target === event.currentTarget) {
+              setShowGuide(false);
+            }
+          }}
+        >
+          <div className="guide-modal" role="dialog" aria-modal="true" aria-labelledby="guideTitle">
+            <div className="guide-header">
+              <span className="guide-info-icon" aria-hidden="true">
                 <InfoIcon />
               </span>
-              Mọi thắc mắc vui lòng liên hệ bộ phận hỗ trợ.
-            </p>
-          </div>
-          <div className="guide-footer">
-            <button type="button" className="guide-ok" onClick={() => setShowGuide(false)}>
-              Đã hiểu
-            </button>
+              <span id="guideTitle">Hướng dẫn đăng nhập</span>
+              <button type="button" className="guide-close" onClick={() => setShowGuide(false)} aria-label="Đóng">
+                <CloseIcon />
+              </button>
+            </div>
+            <div className="guide-body">
+              <div className="guide-text">
+                Thí sinh nhập học trực tuyến dùng <b>Tên đăng nhập</b> và <b>Mật khẩu</b> được cấp.
+              </div>
+              <div className="guide-box">
+                <div className="guide-row">
+                  <span className="guide-row-icon user" aria-hidden="true">
+                    <UserIcon />
+                  </span>
+                  <span>
+                    Tên đăng nhập là <b>CCCD/CMND</b> của thí sinh,
+                    <span className="guide-example">VD: 001234567891</span>
+                  </span>
+                </div>
+                <div className="guide-row">
+                  <span className="guide-row-icon lock" aria-hidden="true">
+                    <LockIcon />
+                  </span>
+                  <span>
+                    Mật khẩu là <b>ngày sinh</b> của thí sinh,
+                    <span className="guide-example">VD: 01012007</span>
+                  </span>
+                </div>
+              </div>
+              <p className="guide-note">
+                <span className="guide-note-icon" aria-hidden="true">
+                  <InfoIcon />
+                </span>
+                Mọi thắc mắc vui lòng liên hệ bộ phận hỗ trợ.
+              </p>
+            </div>
+            <div className="guide-footer">
+              <button type="button" className="guide-ok" onClick={() => setShowGuide(false)}>
+                Đã hiểu
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      ) : null}
     </>
   );
 }

@@ -2,7 +2,7 @@ import { useContext } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
-export function ProtectedRoute({ children }) {
+export function ProtectedRoute({ children, allowRoles, loginPath = "/user/login" }) {
   const { user, loading } = useContext(AuthContext);
   const location = useLocation();
 
@@ -11,7 +11,12 @@ export function ProtectedRoute({ children }) {
   }
 
   if (!user) {
-    return <Navigate to="/user/login" replace state={{ from: location }} />;
+    return <Navigate to={loginPath} replace state={{ from: location }} />;
+  }
+
+  if (allowRoles?.length && !allowRoles.some((role) => user.roles?.includes(role))) {
+    const fallbackPath = user.roles?.includes("ADMIN") ? "/admin/dashboard" : "/mucdich";
+    return <Navigate to={fallbackPath} replace />;
   }
 
   return children;

@@ -9,10 +9,7 @@ function ArrowRightIcon() {
 }
 
 const hotMajors = [
-  {
-    label: "Công nghệ thông tin",
-    href: "https://daotao.ptit.edu.vn/nganhhoc/7480201"
-  },
+  { label: "Công nghệ thông tin", href: "https://daotao.ptit.edu.vn/nganhhoc/7480201" },
   {
     label: "Khoa học máy tính (định hướng Khoa học dữ liệu)",
     href: "https://daotao.ptit.edu.vn/nganhhoc/7480101"
@@ -56,7 +53,7 @@ export function PurposePage({ user }) {
   return (
     <div className="md-page">
       <main className="md-wrap">
-        <div className="md-greet">Xin chào {greetingName}</div>
+        <div className="md-greet">Xin chào {greetingName}, 👋</div>
         <div className="md-desc">
           Bạn đang tham gia hệ thống xét tuyển trực tuyến của PTIT
           <br />
@@ -68,7 +65,7 @@ export function PurposePage({ user }) {
             <option>Chính quy</option>
             <option>Liên thông</option>
           </select>
-          <select defaultValue="2026">
+          <select defaultValue="2025">
             <option>2025</option>
             <option>2026</option>
           </select>
@@ -82,7 +79,12 @@ export function PurposePage({ user }) {
               <div className="md-illus">
                 <img src="/images/mucdich-xet-tuyen.png" alt="Nộp hồ sơ trực tuyến" />
               </div>
-              <div className="md-card-foot"><span>Xem chi tiết</span><span className="md-card-arrow"><ArrowRightIcon /></span></div>
+              <div className="md-card-foot">
+                <span>Xem chi tiết</span>
+                <span className="md-card-arrow">
+                  <ArrowRightIcon />
+                </span>
+              </div>
             </div>
           </Link>
           <article className="md-card">
@@ -92,7 +94,12 @@ export function PurposePage({ user }) {
               <div className="md-illus">
                 <img src="/images/mucdich-nhap-hoc.png" alt="Nhập học trực tuyến" />
               </div>
-              <div className="md-card-foot"><span>Xem chi tiết</span><span className="md-card-arrow"><ArrowRightIcon /></span></div>
+              <div className="md-card-foot">
+                <span>Xem chi tiết</span>
+                <span className="md-card-arrow">
+                  <ArrowRightIcon />
+                </span>
+              </div>
             </div>
           </article>
         </section>
@@ -101,7 +108,9 @@ export function PurposePage({ user }) {
           <article className="md-trend-panel hot-panel">
             <img src="/images/top-hot-corner.svg" alt="HOT" className="md-trend-deco" />
             <img src="/images/ptit-header-icon.png" alt="PTIT" className="md-trend-logo" />
-            <div className="md-trend-title">Top ngành <span className="hot-word">HOT</span> nhất</div>
+            <div className="md-trend-title">
+              Top ngành <span className="hot-word">HOT</span> nhất
+            </div>
             <div className="md-trend-sub">Tổng hợp một số ngành được yêu thích nhất qua các năm tuyển sinh</div>
             <div className="md-trend-grid">
               <div className="md-trend-left">
@@ -120,10 +129,13 @@ export function PurposePage({ user }) {
               </div>
             </div>
           </article>
+
           <article className="md-trend-panel new-panel">
             <img src="/images/top-new-corner.svg" alt="NEW" className="md-trend-deco" />
             <img src="/images/ptit-header-icon.png" alt="PTIT" className="md-trend-logo" />
-            <div className="md-trend-title">Top ngành <span className="new-word">MỚI</span> nhất</div>
+            <div className="md-trend-title">
+              Top ngành <span className="new-word">MỚI</span> nhất
+            </div>
             <div className="md-trend-sub">Tổng hợp một số ngành mới nhất hiện nay</div>
             <div className="md-trend-grid">
               <div className="md-trend-left">
