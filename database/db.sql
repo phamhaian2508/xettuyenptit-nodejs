@@ -1,6 +1,7 @@
 DROP DATABASE IF EXISTS xettuyenptitnodejs;
 CREATE DATABASE xettuyenptitnodejs CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE xettuyenptitnodejs;
+SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE roles (
   id BIGINT NOT NULL AUTO_INCREMENT,
